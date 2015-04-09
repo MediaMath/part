@@ -21,7 +21,7 @@ func getCredentials(fileName string) (*credentials, error) {
 	user := os.Getenv(userEnvVariable)
 	pass := os.Getenv(passwordEnvVariable)
 
-	if fileName != "" && filepath.Ext(fileName) == ".json" {
+	if fileName != "" && strings.ToLower(filepath.Ext(fileName)) == ".json" {
 		return getCredentialsFromJSONFile(fileName)
 	}
 
