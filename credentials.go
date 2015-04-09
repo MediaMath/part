@@ -30,7 +30,7 @@ func getCredentials(fileName string) (*credentials, error) {
 	}
 
 	if user != "" && pass != "" {
-		return &credentials{os.Getenv(userEnvVariable), os.Getenv(passwordEnvVariable)}, nil
+		return &credentials{user, pass}, nil
 	}
 
 	return nil, nil

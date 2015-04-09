@@ -3,7 +3,7 @@ Publish to artifactory as a cli
 
 ## What it does
 
-Part is a simple cli that take some command line parameters (part -h for documentation) and an artifact (zip, jar, etc).  It then creates a maven pom and publishes it and the artifact to artifactory.  This allows for easy publishing of artifacts that can be found via gavc style searches via the artifactory rest api.
+Part is a simple cli that take some command line parameters (part -h for documentation) and an artifact (zip, jar, etc).  It then creates a maven pom and publishes it and the artifact to artifactory.  This allows for easy publishing of artifacts that can be found via Maven GAVC (Group, Artifact, Version, Classifier) style searches via the artifactory rest api.  See the [maven pom reference](https://maven.apache.org/pom.html) for more details about gavc coordinates generally and the [artifactory rest documentation](https://www.jfrog.com/confluence/display/RTF/Artifactory+REST+API#ArtifactoryRESTAPI-GAVCSearch) for artifactory GAVC searches.
 
 ## Artifactory REST API endpoint
 
@@ -39,7 +39,7 @@ If no filename is passed in via the -credentials flag part will look for the ART
 
 ### No Auth
 
-If no filename is passed and both environment variables are not provided, part will attempt to publis without authentication.
+If no filename is passed and both environment variables are not provided, part will attempt to publish without authentication.
 
 ## Integration Tests
 

@@ -30,8 +30,7 @@ func isOk(status int) bool {
 func url(fileName string, host string, repo string, group string, artifact string, version string) string {
 	hostEscaped := strings.TrimRight(host, "/")
 	groupEscaped := strings.Replace(group, ".", "/", -1)
-	ur := fmt.Sprintf("%s/%s/%s/%s/%s/%s", hostEscaped, repo, groupEscaped, artifact, version, filepath.Base(fileName))
-	return ur
+	return fmt.Sprintf("%s/%s/%s/%s/%s/%s", hostEscaped, repo, groupEscaped, artifact, version, filepath.Base(fileName))
 }
 
 func put(url string, fileName string, creds *credentials) (*http.Response, error) {
