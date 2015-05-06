@@ -22,6 +22,4 @@ func TestPomCreation(t *testing.T) {
 	if parsed != *created {
 		t.Errorf("\n%v\n%v", parsed, *created)
 	}
-
-	t.Errorf("Failing cause testing failure")
 }
