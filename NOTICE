@@ -1,0 +1,7 @@
+This is a small program that publishes artifacts to artifactory and publishes their GAVC variables. 
+
+3rd Party Depedencies:
+
+golang
+BSD License
+https://golang.org/LICENSE
