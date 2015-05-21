@@ -18,5 +18,6 @@ else
 	REPOSITORY=libs-release-staging
 fi
 
+export REPOSITORY
 make clean test publish
 
