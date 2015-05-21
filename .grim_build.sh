@@ -9,8 +9,11 @@ export PATH="$GOPATH/bin:$PATH"
 
 cd "./$CLONE_PATH"
 
-make clean test
-
 if [ "$GH_EVENT_NAME" == "push" -a "$GH_TARGET" == "master" ]; then
-	REPOSITORY=libs-release-local make publish
+	REPOSITORY=libs-release-local
+elif
+	REPOSITORY=libs-release-staging
 fi
+
+make clean test publish
+

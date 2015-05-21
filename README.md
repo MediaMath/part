@@ -40,11 +40,3 @@ If no filename is passed in via the -credentials flag part will look for the ART
 ### No Auth
 
 If no filename is passed and both environment variables are not provided, part will attempt to publish without authentication.
-
-## Integration Tests
-
-There is an integration test that actually attempts to publish to a real repository.  It is not run in short mode, or if the host and repo are not defined.  To run: 
-
-```bash
-ARTIFACTORY_HOST=https://artifactory.mediamath.com/artifactory PART_TEST_REPO=libs-snapshot-local PART_TEST_CREDENTIALS=$HOME/.ivy2/credentials/artifactory.mediamath.com go test -v
-```
