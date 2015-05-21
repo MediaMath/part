@@ -5,6 +5,20 @@ Publish to artifactory as a cli
 
 Part is a simple cli that take some command line parameters (part -h for documentation) and an artifact (zip, jar, etc).  It then creates a maven pom and publishes it and the artifact to artifactory.  This allows for easy publishing of artifacts that can be found via Maven GAVC (Group, Artifact, Version, Classifier) style searches via the artifactory rest api.  See the [maven pom reference](https://maven.apache.org/pom.html) for more details about gavc coordinates generally and the [artifactory rest documentation](https://www.jfrog.com/confluence/display/RTF/Artifactory+REST+API#ArtifactoryRESTAPI-GAVCSearch) for artifactory GAVC searches.
 
+## Installation
+
+If you are using this as part of a golang build process, just install via standard go tools:
+
+```bash
+go install -a github.com/MediaMath/part
+```
+
+Otherwise you can download the latest zip package of it:
+
+```bash
+wget https://artifactory.mediamath.com/artifactory/libs-release-global/com/mediamath/part/[RELEASE]/part-[RELEASE].zip
+```
+
 ## Artifactory REST API endpoint
 
 The artifactory rest api endpoint must be provided either on the command line via the -h flag or via the ARTIFACTORY_HOST parameter.  This should be the fully formed REST API endpoint, not just the host domain. (e.g. https://artifactory.mediamath.com/artifactory).
