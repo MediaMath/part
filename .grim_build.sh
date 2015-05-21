@@ -15,7 +15,7 @@ if [ "$GH_EVENT_NAME" == "push" -a "$GH_TARGET" == "master" ]; then
 elif [ "$GH_EVENT_NAME" == "pull_request" -a "$GH_TARGET" == "master" ]; then
 	#on any other event publish to the staging repo as this acts as an integration test
 	#boostrapping ftw!
-	REPOSITORY=libs-release-staging make clean test publish
+	REPOSITORY=libs-staging-local make clean test publish
 else 
 	make clean test
 fi
