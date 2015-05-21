@@ -11,7 +11,7 @@ cd "./$CLONE_PATH"
 
 if [ "$GH_EVENT_NAME" == "push" -a "$GH_TARGET" == "master" ]; then
 	REPOSITORY=libs-release-local
-elif
+else
 	REPOSITORY=libs-release-staging
 fi
 
