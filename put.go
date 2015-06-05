@@ -18,11 +18,10 @@ func deploy(fileName string, host string, creds *credentials, repo string, group
 
 	location := url(fileName, host, repo, group, artifact, version)
 	resp, putErr := put(location, fileName, creds)
-	defer resp.Body.Close()
-
 	if putErr != nil {
 		return &artifactoryResponse{Location: location, PublishError: putErr}
 	}
+	defer resp.Body.Close()
 
 	return parseResponse(location, resp)
 }
