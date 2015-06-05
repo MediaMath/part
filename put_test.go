@@ -26,3 +26,11 @@ func TestUrlEncodingStripsHostIfNecessary(t *testing.T) {
 		t.Errorf(gotten)
 	}
 }
+
+func TestDeployNonExistantFileIsErrorNotPanic(t *testing.T) {
+	resp := deploy("doesntexist", "https//artifactory.mediamath.com/artifactory", &credentials{}, "libs-release-global", "com.mediamath", "part", "failing-test")
+
+	if resp.PublishError == nil {
+		t.Errorf("Should have error: %v", resp)
+	}
+}
