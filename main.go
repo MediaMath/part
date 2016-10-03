@@ -19,6 +19,7 @@ const hostEnvVariable = "ARTIFACTORY_HOST"
 
 func main() {
 	verbose := flag.Bool("verbose", false, "Show verbose output.")
+	get := flag.Bool("get", false, "Get the artifact instead of publishing it.")
 	pomOnly := flag.Bool("pomOnly", false, "Do NOT publish.  Generate poms only")
 	credentialsFile := flag.String("credentials", "", fmt.Sprintf("File with user, password.  If .json extension assumes json otherwise ini.  If not provided assumes %s, %s environment variables are provided.", userEnvVariable, passwordEnvVariable))
 	host := flag.String("h", os.Getenv(hostEnvVariable), fmt.Sprintf("Artifactory REST API endpoint (ie https://artifactory.example.com/artifactory/). If not provided looks at environment variable %s.", hostEnvVariable))
@@ -48,12 +49,20 @@ func main() {
 		log.Fatal(credErr)
 	}
 
-	fileResponse, pomResponse, publishErr := publish(*pomOnly, file, *host, creds, *repo, *group, *artifact, *version)
+	if *get {
+		getErr := getArtifact(file, *host, creds, *repo, *group, *artifact, *version)
+		if getErr != nil {
+			log.Fatal(getErr)
+		}
+	} else {
 
-	if publishErr != nil {
-		log.Fatal(publishErr)
+		fileResponse, pomResponse, publishErr := publish(*pomOnly, file, *host, creds, *repo, *group, *artifact, *version)
+
+		if publishErr != nil {
+			log.Fatal(publishErr)
+		}
+
+		fmt.Print(fileResponse.AsString(*verbose))
+		fmt.Print(pomResponse.AsString(*verbose))
 	}
-
-	fmt.Print(fileResponse.AsString(*verbose))
-	fmt.Print(pomResponse.AsString(*verbose))
 }
