@@ -66,7 +66,7 @@ func bodyError(resp *http.Response) error {
 		return fmt.Errorf("COULD NOT READ BODY:%v", err)
 	}
 
-	return fmt.Errorf("body: %v", bodyBytes)
+	return fmt.Errorf("body: %q", bodyBytes)
 }
 
 func parseResponse(location string, resp *http.Response, req *http.Request, timing *artifactoryTiming) *artifactoryResponse {
