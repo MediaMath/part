@@ -7,6 +7,7 @@ package main
 import (
 	"os"
 	"testing"
+	"time"
 )
 
 const testRepoEnvVariable = "PART_TEST_REPO"
@@ -34,13 +35,13 @@ func TestPublishIntegration(t *testing.T) {
 		t.Errorf("%v", credsErr)
 	}
 
-	_, _, shouldWork := publish(false, "integration_test.go", host, creds, repo, "com.mediamath", "part_integration_test", "SNAPSHOT")
+	_, _, shouldWork := publish(30*time.Second, false, "integration_test.go", host, creds, repo, "com.mediamath", "part_integration_test", "SNAPSHOT")
 
 	if shouldWork != nil {
 		t.Errorf("%v", shouldWork)
 	}
 
-	_, _, shouldFail := publish(false, "integration_test.go", host, creds, "NOTREAL-SHOULDFAIL-REPO", "com.mediamath", "part_integration_test", "SNAPSHOT")
+	_, _, shouldFail := publish(30*time.Second, false, "integration_test.go", host, creds, "NOTREAL-SHOULDFAIL-REPO", "com.mediamath", "part_integration_test", "SNAPSHOT")
 
 	if shouldFail == nil {
 		t.Errorf("Didn't fail")
