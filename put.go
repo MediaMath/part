@@ -8,7 +8,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -48,6 +50,9 @@ func put(timeout time.Duration, url string, fileName string, creds *credentials)
 	}
 
 	req.Close = true
+
+	r, rerr := httputil.DumpRequest(req, true)
+	log.Printf("%v:%s", rerr, r)
 
 	client := &http.Client{Timeout: timeout}
 	timing := &artifactoryTiming{Start: time.Now()}
