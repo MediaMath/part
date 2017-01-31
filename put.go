@@ -51,7 +51,7 @@ func put(timeout time.Duration, url string, fileName string, creds *credentials)
 
 	req.Close = true
 
-	r, rerr := httputil.DumpRequest(req, true)
+	r, rerr := httputil.DumpRequest(req, false)
 	log.Printf("%v:%s", rerr, r)
 
 	client := &http.Client{Timeout: timeout}
