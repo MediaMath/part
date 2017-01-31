@@ -47,6 +47,8 @@ func put(url string, fileName string, creds *credentials) (*artifactoryTiming, *
 		req.SetBasicAuth(creds.User, creds.Password)
 	}
 
+	req.Close = true
+
 	client := &http.Client{}
 	timing := &artifactoryTiming{Start: time.Now()}
 	resp, err := client.Do(req)
