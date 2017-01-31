@@ -13,6 +13,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/motemen/go-loghttp"
 )
 
 func deploy(fileName string, host string, creds *credentials, repo string, group string, artifact string, version string) *artifactoryResponse {
@@ -49,7 +51,9 @@ func put(url string, fileName string, creds *credentials) (*artifactoryTiming, *
 
 	req.Close = true
 
-	client := &http.Client{}
+	client := &http.Client{
+		Transport: &loghttp.Transport{},
+	}
 	timing := &artifactoryTiming{Start: time.Now()}
 	resp, err := client.Do(req)
 	timing.End = time.Now()
