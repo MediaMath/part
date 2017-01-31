@@ -70,7 +70,7 @@ func main() {
 			log.Fatal(publishErr)
 		}
 
-		fmt.Print(fileResponse.AsString(*verbose))
-		fmt.Print(pomResponse.AsString(*verbose))
+		fmt.Println(fileResponse.AsString(*verbose))
+		fmt.Println(pomResponse.AsString(*verbose))
 	}
 }
