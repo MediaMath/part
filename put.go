@@ -19,12 +19,7 @@ func deploy(fileName string, host string, creds *credentials, repo string, group
 
 	location := url(fileName, host, repo, group, artifact, version)
 	timing, req, resp, putErr := put(location, fileName, creds)
-	if putErr != nil {
-		return &artifactoryResponse{Location: location, PublishError: putErr}
-	}
-	defer resp.Body.Close()
-
-	return parseResponse(location, resp, req, timing)
+	return parseResponse(location, putErr, resp, req, timing)
 }
 
 func isOk(status int) bool {
@@ -57,6 +52,9 @@ func put(url string, fileName string, creds *credentials) (*artifactoryTiming, *
 	resp, err := client.Do(req)
 	timing.End = time.Now()
 	timing.Duration = timing.End.Sub(timing.Start)
+	if err != nil {
+		err = fmt.Errorf("client error: %v", err)
+	}
 	return timing, req, resp, err
 }
 
@@ -69,8 +67,18 @@ func bodyError(resp *http.Response) error {
 	return fmt.Errorf("body: %q", bodyBytes)
 }
 
-func parseResponse(location string, resp *http.Response, req *http.Request, timing *artifactoryTiming) *artifactoryResponse {
-	artResp := &artifactoryResponse{Location: location, Header: resp.Header, StatusCode: resp.StatusCode, StatusMessage: resp.Status}
+func parseResponse(location string, err error, resp *http.Response, req *http.Request, timing *artifactoryTiming) *artifactoryResponse {
+	artResp := &artifactoryResponse{Location: location, PublishError: err, Timing: timing}
+
+	if resp == nil {
+		return artResp
+	}
+
+	defer resp.Body.Close()
+
+	artResp.Header = resp.Header
+	artResp.StatusCode = resp.StatusCode
+	artResp.StatusMessage = resp.Status
 
 	if isOk(resp.StatusCode) {
 		var pubResult artifactoryPublishResult
@@ -140,6 +148,10 @@ func (resp *artifactoryResponse) AsString(verbose bool) string {
 		} else {
 			lines = append(lines, string(jsonString))
 		}
+	}
+
+	if verbose {
+		lines = append(lines, fmt.Sprintf("start: %v end: %v duration: %v", resp.Timing.Start, resp.Timing.End, resp.Timing.Duration))
 	}
 
 	return strings.Join(lines, "\n")
