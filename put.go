@@ -12,18 +12,19 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 func deploy(fileName string, host string, creds *credentials, repo string, group string, artifact string, version string) *artifactoryResponse {
 
 	location := url(fileName, host, repo, group, artifact, version)
-	resp, putErr := put(location, fileName, creds)
+	timing, req, resp, putErr := put(location, fileName, creds)
 	if putErr != nil {
 		return &artifactoryResponse{Location: location, PublishError: putErr}
 	}
 	defer resp.Body.Close()
 
-	return parseResponse(location, resp)
+	return parseResponse(location, resp, req, timing)
 }
 
 func isOk(status int) bool {
@@ -36,15 +37,15 @@ func url(fileName string, host string, repo string, group string, artifact strin
 	return fmt.Sprintf("%s/%s/%s/%s/%s/%s", hostEscaped, repo, groupEscaped, artifact, version, filepath.Base(fileName))
 }
 
-func put(url string, fileName string, creds *credentials) (*http.Response, error) {
+func put(url string, fileName string, creds *credentials) (*artifactoryTiming, *http.Request, *http.Response, error) {
 	file, openErr := os.Open(fileName)
 	if openErr != nil {
-		return nil, openErr
+		return nil, nil, nil, fmt.Errorf("error opening %v: %v", fileName, openErr)
 	}
 
 	req, reqErr := http.NewRequest("PUT", url, file)
 	if reqErr != nil {
-		return nil, reqErr
+		return nil, nil, nil, fmt.Errorf("error creating PUT request for %v: %v", url, reqErr)
 	}
 
 	if creds != nil {
@@ -52,7 +53,11 @@ func put(url string, fileName string, creds *credentials) (*http.Response, error
 	}
 
 	client := &http.Client{}
-	return client.Do(req)
+	timing := &artifactoryTiming{Start: time.Now()}
+	resp, err := client.Do(req)
+	timing.End = time.Now()
+	timing.Duration = timing.End.Sub(timing.Start)
+	return timing, req, resp, err
 }
 
 func bodyError(resp *http.Response) error {
@@ -61,21 +66,21 @@ func bodyError(resp *http.Response) error {
 		return fmt.Errorf("COULD NOT READ BODY:%v", err)
 	}
 
-	return fmt.Errorf(string(bodyBytes))
+	return fmt.Errorf("body: %v", bodyBytes)
 }
 
-func parseResponse(location string, resp *http.Response) *artifactoryResponse {
+func parseResponse(location string, resp *http.Response, req *http.Request, timing *artifactoryTiming) *artifactoryResponse {
 	artResp := &artifactoryResponse{Location: location, Header: resp.Header, StatusCode: resp.StatusCode, StatusMessage: resp.Status}
 
 	if isOk(resp.StatusCode) {
 		var pubResult artifactoryPublishResult
 		if parseError := json.NewDecoder(resp.Body).Decode(&pubResult); parseError != nil {
-			artResp.PublishError = fmt.Errorf("%v:%v", parseError, bodyError(resp))
+			artResp.PublishError = fmt.Errorf("could not parse result %v:%v", parseError, bodyError(resp))
 		}
 
 		artResp.PublishResult = pubResult
 	} else {
-		artResp.PublishError = bodyError(resp)
+		artResp.PublishError = fmt.Errorf("invalid response %v: %v", resp.StatusCode, bodyError(resp))
 	}
 
 	return artResp
@@ -88,24 +93,31 @@ type artifactoryResponse struct {
 	StatusMessage string
 	PublishResult artifactoryPublishResult
 	PublishError  error
+	Timing        *artifactoryTiming
 }
 
 type artifactoryPublishResult struct {
-	Repo              string               `json:repo`
-	Path              string               `json:path`
-	Created           string               `json:created`
-	CreatedBy         string               `json:createdBy`
-	DownloadURI       string               `json:downloadUri`
-	MimeType          string               `json:mimeType`
-	Size              string               `json:size`
-	Checksums         artifactoryChecksums `json:checksums`
-	OriginalChecksums artifactoryChecksums `json:originalChecksums`
-	URI               string               `json:uri`
+	Repo              string               `json:"repo"`
+	Path              string               `json:"path"`
+	Created           string               `json:"created"`
+	CreatedBy         string               `json:"createdBy"`
+	DownloadURI       string               `json:"downloadUri"`
+	MimeType          string               `json:"mimeType"`
+	Size              string               `json:"size"`
+	Checksums         artifactoryChecksums `json:"checksums"`
+	OriginalChecksums artifactoryChecksums `json:"originalChecksums"`
+	URI               string               `json:"uri"`
+}
+
+type artifactoryTiming struct {
+	Start    time.Time     `json:"start"`
+	End      time.Time     `json:"end"`
+	Duration time.Duration `json:"duration"`
 }
 
 type artifactoryChecksums struct {
-	Sha1 string `json:sha1`
-	Md5  string `json:md5`
+	Sha1 string `json:"sha1"`
+	Md5  string `json:"md5"`
 }
 
 func (resp *artifactoryResponse) AsString(verbose bool) string {
