@@ -34,6 +34,10 @@ test:
 
 publish: part tmp/part-$(VERSION).zip
 	part -verbose -credentials=$(HOME)/.ivy2/credentials/$(ARTIFACTORY_HOST) -h="https://$(ARTIFACTORY_HOST)/artifactory" -r=$(REPOSITORY) -g=com.mediamath -a=part -v=$(VERSION) tmp/part-$(VERSION).zip
+	part -verbose -credentials=$(HOME)/.ivy2/credentials/$(ARTIFACTORY_HOST) -h="https://$(ARTIFACTORY_HOST)/artifactory" -r=$(REPOSITORY) -g=com.mediamath.changes -a=part1 -v=$(VERSION) tmp/part-$(VERSION).zip
+	part -verbose -credentials=$(HOME)/.ivy2/credentials/$(ARTIFACTORY_HOST) -h="https://$(ARTIFACTORY_HOST)/artifactory" -r=$(REPOSITORY) -g=com.mediamath.changes -a=part2 -v=$(VERSION) tmp/part-$(VERSION).zip
+	part -verbose -credentials=$(HOME)/.ivy2/credentials/$(ARTIFACTORY_HOST) -h="https://$(ARTIFACTORY_HOST)/artifactory" -r=$(REPOSITORY) -g=com.mediamath.changes -a=part3 -v=$(VERSION) tmp/part-$(VERSION).zip
+	part -verbose -credentials=$(HOME)/.ivy2/credentials/$(ARTIFACTORY_HOST) -h="https://$(ARTIFACTORY_HOST)/artifactory" -r=$(REPOSITORY) -g=com.mediamath.changes -a=part4 -v=$(VERSION) tmp/part-$(VERSION).zip
 
 clean:
 	go clean ./...
