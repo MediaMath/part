@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 )
 
 //examples:
@@ -27,6 +28,7 @@ func main() {
 	group := flag.String("g", "", "Maven group")
 	artifact := flag.String("a", "", "Maven artifact")
 	version := flag.String("v", "", "Maven version")
+	timeout := flag.String("t", "30s", "Client timeout")
 	flag.Parse()
 
 	if *host == "" ||
@@ -49,6 +51,12 @@ func main() {
 		log.Fatal(credErr)
 	}
 
+	timeoutDuration, parseErr := time.ParseDuration(*timeout)
+	if parseErr != nil {
+		log.Printf("Cannout parse timeout, using 30s: %v", parseErr)
+		timeoutDuration = 30 * time.Second
+	}
+
 	if *get {
 		getErr := getArtifact(file, *host, creds, *repo, *group, *artifact, *version)
 		if getErr != nil {
@@ -56,7 +64,7 @@ func main() {
 		}
 	} else {
 
-		fileResponse, pomResponse, publishErr := publish(*pomOnly, file, *host, creds, *repo, *group, *artifact, *version)
+		fileResponse, pomResponse, publishErr := publish(timeoutDuration, *pomOnly, file, *host, creds, *repo, *group, *artifact, *version)
 
 		if publishErr != nil {
 			log.Fatal(publishErr)

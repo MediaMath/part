@@ -13,14 +13,12 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/motemen/go-loghttp"
 )
 
-func deploy(fileName string, host string, creds *credentials, repo string, group string, artifact string, version string) *artifactoryResponse {
+func deploy(timeout time.Duration, fileName string, host string, creds *credentials, repo string, group string, artifact string, version string) *artifactoryResponse {
 
 	location := url(fileName, host, repo, group, artifact, version)
-	timing, req, resp, putErr := put(location, fileName, creds)
+	timing, req, resp, putErr := put(timeout, location, fileName, creds)
 	return parseResponse(location, putErr, resp, req, timing)
 }
 
@@ -34,7 +32,7 @@ func url(fileName string, host string, repo string, group string, artifact strin
 	return fmt.Sprintf("%s/%s/%s/%s/%s/%s", hostEscaped, repo, groupEscaped, artifact, version, filepath.Base(fileName))
 }
 
-func put(url string, fileName string, creds *credentials) (*artifactoryTiming, *http.Request, *http.Response, error) {
+func put(timeout time.Duration, url string, fileName string, creds *credentials) (*artifactoryTiming, *http.Request, *http.Response, error) {
 	file, openErr := os.Open(fileName)
 	if openErr != nil {
 		return nil, nil, nil, fmt.Errorf("error opening %v: %v", fileName, openErr)
@@ -51,9 +49,7 @@ func put(url string, fileName string, creds *credentials) (*artifactoryTiming, *
 
 	req.Close = true
 
-	client := &http.Client{
-		Transport: &loghttp.Transport{},
-	}
+	client := &http.Client{Timeout: timeout}
 	timing := &artifactoryTiming{Start: time.Now()}
 	resp, err := client.Do(req)
 	timing.End = time.Now()
