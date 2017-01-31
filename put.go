@@ -157,7 +157,7 @@ func (resp *artifactoryResponse) AsString(verbose bool) string {
 		}
 	}
 
-	if verbose {
+	if verbose && resp.Timing != nil {
 		lines = append(lines, fmt.Sprintf("start: %v end: %v duration: %v", resp.Timing.Start, resp.Timing.End, resp.Timing.Duration))
 	}
 
