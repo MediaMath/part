@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -32,40 +33,60 @@ var (
 	version         = flag.String("v", "", "Maven version")
 )
 
-func parseLocation() (*location, error) {
+func parseLocations() ([]*location, error) {
 	creds, err := getCredentials(*credentialsFile)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(flag.Args()) != 1 {
-		return nil, fmt.Errorf("Must provide a file to publish")
+	if len(flag.Args()) < 1 {
+		return nil, fmt.Errorf("Must provide something to publish")
 	}
 
 	if *host == "" ||
 		*repo == "" ||
 		*group == "" ||
-		*artifact == "" ||
 		*version == "" {
 		return nil, fmt.Errorf("Must provide all required fields")
 	}
 
-	loc := &location{}
-	loc.file = flag.Args()[0]
-	loc.creds = creds
+	artifacts := make(map[string][]string)
+	if *artifact != "" {
+		artifacts[*artifact] = flag.Args()
+	} else {
+		for _, colonDelimited := range flag.Args() {
+			pair := strings.Split(colonDelimited, ":")
+			if len(pair) != 2 {
+				return nil, fmt.Errorf("Could not parse: %v", colonDelimited)
+			}
 
-	loc.host = *host
-	loc.repo = *repo
-	loc.group = *group
-	loc.artifact = *artifact
-	loc.version = *version
+			artifacts[pair[0]] = append(artifacts[pair[0]], pair[1])
+		}
+	}
 
-	return loc, nil
+	locations := []*location{}
+	for artifact, files := range artifacts {
+		for _, file := range files {
+
+			loc := &location{}
+			loc.creds = creds
+
+			loc.host = *host
+			loc.repo = *repo
+			loc.group = *group
+			loc.version = *version
+
+			loc.artifact = artifact
+			loc.file = file
+		}
+	}
+
+	return locations, nil
 }
 
 func main() {
 	flag.Parse()
-	loc, err := parseLocation()
+	locations, err := parseLocations()
 
 	if err != nil {
 		flag.PrintDefaults()
@@ -79,19 +100,23 @@ func main() {
 	}
 
 	if *getFlag {
-		getErr := getArtifact(loc)
-		if getErr != nil {
-			log.Fatal(getErr)
+		for _, loc := range locations {
+			getErr := getArtifact(loc)
+			if getErr != nil {
+				log.Fatal(getErr)
+			}
 		}
 	} else {
 
-		fileResponse, pomResponse, publishErr := publish(timeoutDuration, *pomOnly, loc)
+		for _, loc := range locations {
+			fileResponse, pomResponse, publishErr := publish(timeoutDuration, *pomOnly, loc)
 
-		if publishErr != nil {
-			log.Fatal(publishErr)
+			if publishErr != nil {
+				log.Fatal(publishErr)
+			}
+
+			fmt.Println(fileResponse.AsString(*verbose))
+			fmt.Println(pomResponse.AsString(*verbose))
 		}
-
-		fmt.Println(fileResponse.AsString(*verbose))
-		fmt.Println(pomResponse.AsString(*verbose))
 	}
 }
