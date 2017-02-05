@@ -6,19 +6,14 @@ import (
 	"os"
 )
 
-func getArtifact(fileName string, host string, creds *credentials, repo string, group string, artifact string, version string) error {
-	location := url(fileName, host, repo, group, artifact, version)
-	return get(location, fileName, creds)
-}
-
-func get(url string, fileName string, creds *credentials) error {
-	req, reqErr := http.NewRequest("GET", url, nil)
+func getArtifact(loc *location) error {
+	req, reqErr := http.NewRequest("GET", loc.URL(), nil)
 	if reqErr != nil {
 		return reqErr
 	}
 
-	if creds != nil {
-		req.SetBasicAuth(creds.User, creds.Password)
+	if loc.creds != nil {
+		req.SetBasicAuth(loc.creds.User, loc.creds.Password)
 	}
 
 	client := &http.Client{}
@@ -28,7 +23,7 @@ func get(url string, fileName string, creds *credentials) error {
 	}
 	defer resp.Body.Close()
 
-	out, err := os.Create(fileName)
+	out, err := os.Create(loc.file)
 	if err != nil {
 		return err
 	}

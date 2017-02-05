@@ -6,6 +6,7 @@ package main
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io/ioutil"
 )
 
@@ -18,28 +19,30 @@ type pom struct {
 	Version        string   `xml:"version"`
 }
 
-func newPom(group string, artifact string, version string) *pom {
+func newPom(loc *location) *pom {
 	return &pom{
 		//dont like this duplication but can't figure out how to get around it
 		XMLName:        xml.Name{"http://maven.apache.org/POM/4.0.0", "project"},
 		SchemaLocation: "http://maven.apace.org/POM/4.0.0 http://mave.apache.org/xsd/maven-4.0.0.xsd",
 		ModelVersion:   "4.0.0",
-		GroupID:        group,
-		ArtifactID:     artifact,
-		Version:        version}
+		GroupID:        loc.group,
+		ArtifactID:     loc.artifact,
+		Version:        loc.version}
 }
 
-func createPom(filename string, group string, artifact string, version string) error {
-	p := newPom(group, artifact, version)
+func createPom(loc *location) (string, error) {
+	filename := fmt.Sprintf("%v.pom", loc.artifact)
+
+	p := newPom(loc)
 
 	pomString, marshalErr := xml.MarshalIndent(p, " ", "   ")
 	if marshalErr != nil {
-		return marshalErr
+		return filename, marshalErr
 	}
 
 	if writeErr := ioutil.WriteFile(filename, []byte(pomString), 0644); writeErr != nil {
-		return writeErr
+		return filename, writeErr
 	}
 
-	return nil
+	return filename, nil
 }

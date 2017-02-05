@@ -18,37 +18,58 @@ import (
 
 const hostEnvVariable = "ARTIFACTORY_HOST"
 
-func main() {
-	verbose := flag.Bool("verbose", false, "Show verbose output.")
-	get := flag.Bool("get", false, "Get the artifact instead of publishing it.")
-	pomOnly := flag.Bool("pomOnly", false, "Do NOT publish.  Generate poms only")
-	credentialsFile := flag.String("credentials", "", fmt.Sprintf("File with user, password.  If .json extension assumes json otherwise ini.  If not provided assumes %s, %s environment variables are provided.", userEnvVariable, passwordEnvVariable))
-	host := flag.String("h", os.Getenv(hostEnvVariable), fmt.Sprintf("Artifactory REST API endpoint (ie https://artifactory.example.com/artifactory/). If not provided looks at environment variable %s.", hostEnvVariable))
-	repo := flag.String("r", "", "Repository to publish to")
-	group := flag.String("g", "", "Maven group")
-	artifact := flag.String("a", "", "Maven artifact")
-	version := flag.String("v", "", "Maven version")
-	timeout := flag.String("t", "30s", "Client timeout")
-	flag.Parse()
+var (
+	verbose = flag.Bool("verbose", false, "Show verbose output.")
+	getFlag = flag.Bool("get", false, "Get the artifact instead of publishing it.")
+	pomOnly = flag.Bool("pomOnly", false, "Do NOT publish.  Generate poms only")
+	timeout = flag.String("t", "30s", "Client timeout")
+
+	credentialsFile = flag.String("credentials", "", fmt.Sprintf("File with user, password.  If .json extension assumes json otherwise ini.  If not provided assumes %s, %s environment variables are provided.", userEnvVariable, passwordEnvVariable))
+	host            = flag.String("h", os.Getenv(hostEnvVariable), fmt.Sprintf("Artifactory REST API endpoint (ie https://artifactory.example.com/artifactory/). If not provided looks at environment variable %s.", hostEnvVariable))
+	repo            = flag.String("r", "", "Repository to publish to")
+	group           = flag.String("g", "", "Maven group")
+	artifact        = flag.String("a", "", "Maven artifact")
+	version         = flag.String("v", "", "Maven version")
+)
+
+func parseLocation() (*location, error) {
+	creds, err := getCredentials(*credentialsFile)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(flag.Args()) != 1 {
+		return nil, fmt.Errorf("Must provide a file to publish")
+	}
 
 	if *host == "" ||
 		*repo == "" ||
 		*group == "" ||
 		*artifact == "" ||
 		*version == "" {
+		return nil, fmt.Errorf("Must provide all required fields")
+	}
+
+	loc := &location{}
+	loc.file = flag.Args()[0]
+	loc.creds = creds
+
+	loc.host = *host
+	loc.repo = *repo
+	loc.group = *group
+	loc.artifact = *artifact
+	loc.version = *version
+
+	return loc, nil
+}
+
+func main() {
+	flag.Parse()
+	loc, err := parseLocation()
+
+	if err != nil {
 		flag.PrintDefaults()
-		log.Fatal("Must provide the host, repo, group, artifact and version")
-	}
-
-	if len(flag.Args()) != 1 {
-		log.Fatal("Must provide a file to publish")
-	}
-
-	file := flag.Args()[0]
-
-	creds, credErr := getCredentials(*credentialsFile)
-	if credErr != nil {
-		log.Fatal(credErr)
+		log.Fatal(err)
 	}
 
 	timeoutDuration, parseErr := time.ParseDuration(*timeout)
@@ -57,14 +78,14 @@ func main() {
 		timeoutDuration = 30 * time.Second
 	}
 
-	if *get {
-		getErr := getArtifact(file, *host, creds, *repo, *group, *artifact, *version)
+	if *getFlag {
+		getErr := getArtifact(loc)
 		if getErr != nil {
 			log.Fatal(getErr)
 		}
 	} else {
 
-		fileResponse, pomResponse, publishErr := publish(timeoutDuration, *pomOnly, file, *host, creds, *repo, *group, *artifact, *version)
+		fileResponse, pomResponse, publishErr := publish(timeoutDuration, *pomOnly, loc)
 
 		if publishErr != nil {
 			log.Fatal(publishErr)

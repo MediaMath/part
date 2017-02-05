@@ -35,13 +35,32 @@ func TestPublishIntegration(t *testing.T) {
 		t.Errorf("%v", credsErr)
 	}
 
-	_, _, shouldWork := publish(30*time.Second, false, "integration_test.go", host, creds, repo, "com.mediamath", "part_integration_test", "SNAPSHOT")
+	loc := &location{
+		host:     host,
+		creds:    creds,
+		repo:     repo,
+		group:    "com.mediamath",
+		artifact: "part_integration_test",
+		version:  "SNAPSHOT",
+		file:     "integration_test.go",
+	}
+
+	_, _, shouldWork := publish(30*time.Second, false, loc)
 
 	if shouldWork != nil {
 		t.Errorf("%v", shouldWork)
 	}
 
-	_, _, shouldFail := publish(30*time.Second, false, "integration_test.go", host, creds, "NOTREAL-SHOULDFAIL-REPO", "com.mediamath", "part_integration_test", "SNAPSHOT")
+	loc = &location{
+		host:     host,
+		creds:    creds,
+		repo:     "NOTREAL-SHOULDFAIL-REPO",
+		group:    "com.mediamath",
+		artifact: "part_integration_test",
+		version:  "SNAPSHOT",
+		file:     "integration_test.go",
+	}
+	_, _, shouldFail := publish(30*time.Second, false, loc)
 
 	if shouldFail == nil {
 		t.Errorf("Didn't fail")
