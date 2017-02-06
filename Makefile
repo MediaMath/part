@@ -6,7 +6,7 @@
 
 TIMESTAMP := $(shell date +"%s")
 BUILD_TIME := $(shell date +"%Y%m%d.%H%M%S")
-ARTIFACTORY_HOST = artifactory.mediamath.com
+ARTIFACTORY_HOST = artifactory-origin.mediamath.com
 
 VERSION = $(strip $(TIMESTAMP))
 ifndef REPOSITORY 
