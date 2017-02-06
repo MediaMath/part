@@ -33,7 +33,7 @@ test:
 	go test ./...
 
 publish: part tmp/part-$(VERSION).zip
-	part -verbose -credentials=$(HOME)/.ivy2/credentials/artifactory.mediamathc.com -h="https://$(ARTIFACTORY_HOST)/artifactory" -r=$(REPOSITORY) -g=com.mediamath -v=$(VERSION) part:tmp/part-$(VERSION).zip part1:tmp/part-$(VERSION).zip part2:tmp/part-$(VERSION).zip part3:tmp/part-$(VERSION).zip
+	part -verbose -credentials=$(HOME)/.ivy2/credentials/artifactory.mediamath.com -h="https://$(ARTIFACTORY_HOST)/artifactory" -r=$(REPOSITORY) -g=com.mediamath -v=$(VERSION) part:tmp/part-$(VERSION).zip part1:tmp/part-$(VERSION).zip part2:tmp/part-$(VERSION).zip part3:tmp/part-$(VERSION).zip
 
 clean:
 	go clean ./...
