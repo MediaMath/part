@@ -78,6 +78,8 @@ func parseLocations() ([]*location, error) {
 
 			loc.artifact = artifact
 			loc.file = file
+
+			locations = append(locations, loc)
 		}
 	}
 
