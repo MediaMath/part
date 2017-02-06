@@ -12,41 +12,32 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 )
 
-func deploy(timeout time.Duration, fileName string, host string, creds *credentials, repo string, group string, artifact string, version string) *artifactoryResponse {
-
-	location := url(fileName, host, repo, group, artifact, version)
-	timing, req, resp, putErr := put(timeout, location, fileName, creds)
-	return parseResponse(location, putErr, resp, req, timing)
+func deploy(timeout time.Duration, loc *location) *artifactoryResponse {
+	timing, req, resp, putErr := put(timeout, loc)
+	return parseResponse(loc.URL(), putErr, resp, req, timing)
 }
 
 func isOk(status int) bool {
 	return status > 199 && status < 300
 }
 
-func url(fileName string, host string, repo string, group string, artifact string, version string) string {
-	hostEscaped := strings.TrimRight(host, "/")
-	groupEscaped := strings.Replace(group, ".", "/", -1)
-	return fmt.Sprintf("%s/%s/%s/%s/%s/%s", hostEscaped, repo, groupEscaped, artifact, version, filepath.Base(fileName))
-}
-
-func put(timeout time.Duration, url string, fileName string, creds *credentials) (*artifactoryTiming, *http.Request, *http.Response, error) {
-	file, openErr := os.Open(fileName)
+func put(timeout time.Duration, loc *location) (*artifactoryTiming, *http.Request, *http.Response, error) {
+	file, openErr := os.Open(loc.file)
 	if openErr != nil {
-		return nil, nil, nil, fmt.Errorf("error opening %v: %v", fileName, openErr)
+		return nil, nil, nil, fmt.Errorf("error opening %v: %v", loc.file, openErr)
 	}
 
-	req, reqErr := http.NewRequest("PUT", url, file)
+	req, reqErr := http.NewRequest("PUT", loc.URL(), file)
 	if reqErr != nil {
-		return nil, nil, nil, fmt.Errorf("error creating PUT request for %v: %v", url, reqErr)
+		return nil, nil, nil, fmt.Errorf("error creating PUT request for %v: %v", loc.URL(), reqErr)
 	}
 
-	if creds != nil {
-		req.SetBasicAuth(creds.User, creds.Password)
+	if loc.creds != nil {
+		req.SetBasicAuth(loc.creds.User, loc.creds.Password)
 	}
 
 	req.Close = true

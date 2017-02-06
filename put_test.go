@@ -10,28 +10,61 @@ import (
 )
 
 func TestUrlEncodingDoesGroupPaths(t *testing.T) {
-	gotten := url("foo.zip", "https://example.com", "repo1", "com.mediamath", "foo", "121-SNAPSHOT")
-	if gotten != "https://example.com/repo1/com/mediamath/foo/121-SNAPSHOT/foo.zip" {
-		t.Errorf(gotten)
+	loc := &location{
+		host:     "https://example.com",
+		repo:     "repo1",
+		group:    "com.mediamath",
+		artifact: "foo",
+		version:  "121-SNAPSHOT",
+		file:     "foo.zip",
+	}
+
+	if loc.URL() != "https://example.com/repo1/com/mediamath/foo/121-SNAPSHOT/foo.zip" {
+		t.Errorf(loc.URL())
 	}
 }
 
 func TestUrlEncodingOnlyFileName(t *testing.T) {
-	gotten := url("moo/bar/goo/foo.zip", "https://example.com", "repo1", "com.mediamath", "foo", "121-SNAPSHOT")
-	if gotten != "https://example.com/repo1/com/mediamath/foo/121-SNAPSHOT/foo.zip" {
-		t.Errorf(gotten)
+	loc := &location{
+		host:     "https://example.com",
+		repo:     "repo1",
+		group:    "com.mediamath",
+		artifact: "foo",
+		version:  "121-SNAPSHOT",
+		file:     "moo/bar/goo/foo.zip",
+	}
+
+	if loc.URL() != "https://example.com/repo1/com/mediamath/foo/121-SNAPSHOT/foo.zip" {
+		t.Errorf(loc.URL())
 	}
 }
 
 func TestUrlEncodingStripsHostIfNecessary(t *testing.T) {
-	gotten := url("moo/bar/goo/foo.zip", "https://example.com/", "repo1", "com.mediamath", "foo", "121-SNAPSHOT")
-	if gotten != "https://example.com/repo1/com/mediamath/foo/121-SNAPSHOT/foo.zip" {
-		t.Errorf(gotten)
+	loc := &location{
+		host:     "https://example.com/",
+		repo:     "repo1",
+		group:    "com.mediamath",
+		artifact: "foo",
+		version:  "121-SNAPSHOT",
+		file:     "moo/bar/goo/foo.zip",
+	}
+
+	if loc.URL() != "https://example.com/repo1/com/mediamath/foo/121-SNAPSHOT/foo.zip" {
+		t.Errorf(loc.URL())
 	}
 }
 
 func TestDeployNonExistantFileIsErrorNotPanic(t *testing.T) {
-	resp := deploy(30*time.Second, "doesntexist", "https//artifactory.mediamath.com/artifactory", &credentials{}, "libs-release-global", "com.mediamath", "part", "failing-test")
+	loc := &location{
+		host:     "https://artifactory.mediamath.com/artifactory",
+		repo:     "libs-release-global",
+		group:    "com.mediamath",
+		artifact: "part",
+		version:  "failing-test",
+		file:     "doesntexist",
+	}
+
+	resp := deploy(30*time.Second, loc)
 
 	if resp.PublishError == nil {
 		t.Errorf("Should have error: %v", resp)

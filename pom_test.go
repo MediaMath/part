@@ -21,7 +21,16 @@ func TestPomCreation(t *testing.T) {
 	var parsed pom
 	xml.Unmarshal([]byte(expected), &parsed)
 
-	created := newPom("com.mediamath", "part", "12-SNAPSHOT")
+	loc := &location{
+		host:     "https://example.com",
+		repo:     "fake",
+		group:    "com.mediamath",
+		artifact: "part",
+		version:  "12-SNAPSHOT",
+		file:     "foo.zip",
+	}
+
+	created := newPom(loc)
 
 	if parsed != *created {
 		t.Errorf("\n%v\n%v", parsed, *created)
