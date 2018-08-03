@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-const userEnvVariable = "ARTIFACTORY_USER"
+const userEnvVariable = "ARTIFACTORY_USERNAME"
 const passwordEnvVariable = "ARTIFACTORY_PASSWORD"
 
 type credentials struct {

@@ -76,8 +76,8 @@ func TestGetCredentialsFromJsonFile(t *testing.T) {
 }
 
 func TestGetCredentialsFromEnvironment(t *testing.T) {
-	os.Setenv("ARTIFACTORY_USER", "envUser")
-	defer os.Setenv("ARTIFACTORY_USER", "")
+	os.Setenv("ARTIFACTORY_USERNAME", "envUser")
+	defer os.Setenv("ARTIFACTORY_USERNAME", "")
 	os.Setenv("ARTIFACTORY_PASSWORD", "envPassword")
 	defer os.Setenv("ARTIFACTORY_PASSWORD", "")
 
@@ -128,8 +128,8 @@ func TestCredentialsJsonFileIsVerified(t *testing.T) {
 }
 
 func TestCredentialsNullWhenEnvironmentIsNotFullySet(t *testing.T) {
-	os.Setenv("ARTIFACTORY_USER", "envUser")
-	defer os.Setenv("ARTIFACTORY_USER", "")
+	os.Setenv("ARTIFACTORY_USERNAME", "envUser")
+	defer os.Setenv("ARTIFACTORY_USERNAME", "")
 
 	creds, err := getCredentials("")
 	if err != nil || creds != nil {
