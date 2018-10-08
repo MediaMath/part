@@ -20,7 +20,7 @@ workflows:
   version: 2
   release-pipeline:
     jobs:
-      - build:
+      - build
       - publish:
           requires:
             - build
