@@ -1,0 +1,28 @@
+---
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.11
+    working_directory: /go/src/github.com/MediaMath/part
+    steps:
+      - checkout
+      - run: make clean test
+  publish:
+    docker:
+      - image: circleci/golang:1.11
+    working_directory: /go/src/github.com/MediaMath/part
+    steps:
+      - checkout
+      - run: make publish
+
+workflows:
+  version: 2
+  release-pipeline:
+    jobs:
+      - build:
+          context: mediamath
+      - publish:
+          context: mediamath
+          requires:
+            - build
