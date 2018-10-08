@@ -21,8 +21,6 @@ workflows:
   release-pipeline:
     jobs:
       - build:
-          context: mediamath
       - publish:
-          context: mediamath
           requires:
             - build
